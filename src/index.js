@@ -12,27 +12,6 @@ function calcDist(movebox, unmovebox) {
     return dist
 }
 
-// function calcLv(movebox, unmovebox,layer) {
-
-//     var dist = Math.floor(calcDist(movebox, unmovebox));
-//     if (dist <= 20) {
-//         console.log('Perfect');
-//         layer.remove(movebox.unmovebox);
-//     }
-//     else if (dist <= 30) {
-//         console.log('Good');
-//         layer.remove(movebox.unmovebox);
-//     }
-//     else if (dist <= 35) {
-//         console.log('Bad');
-//         layer.remove(movebox.unmovebox);
-//     }
-//     else {
-//         console.log('Miss');
-//         layer.remove(movebox.unmovebox);
-//     }
-// }
-
 var colors = ['red', 'orange', 'yellow', 'green', 'blue', 'cyan', 'purple'];
 var colorIndex = 0;
 
@@ -53,11 +32,11 @@ var scoreBoard = {
 }
 var scoreText = new Konva.Text({
     x: 10,
-    y: 10,
+    y: 30,
     text: 'Perfect: ' + scoreBoard.Perfect + '\n\n' + 'Good: ' + scoreBoard.Good + '\n\n' + 'Bad: ' + scoreBoard.Bad + '\n\n' + 'Miss: ' + scoreBoard.Miss + '\n\n',
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Calibri',
-    fill: '#555',
+    fill: 'white',
     width: 300,
     padding: 20,
     // align: 'center'
@@ -67,16 +46,16 @@ var scoreLayer = new Konva.Layer();
 scoreLayer.add(scoreText);
 stage.add(scoreLayer);
 
-function changeScoreBoard(){
+function changeScoreBoard() {
     //var node = stage.find('Text');
     stage.find('Text').destroy();
     var newScore = new Konva.Text({
         x: 10,
-        y: 10,
+        y: 30,
         text: 'Perfect: ' + scoreBoard.Perfect + '\n\n' + 'Good: ' + scoreBoard.Good + '\n\n' + 'Bad: ' + scoreBoard.Bad + '\n\n' + 'Miss: ' + scoreBoard.Miss + '\n\n',
-        fontSize: 18,
+        fontSize: 20,
         fontFamily: 'Calibri',
-        fill: '#555',
+        fill: 'white',
         width: 300,
         padding: 20,
         // align: 'center'
@@ -85,6 +64,66 @@ function changeScoreBoard(){
     scoreLayer.add(newScore);
     stage.add(scoreLayer);
     //console.log(node.text().toString());
+}
+
+var timeRect = new Konva.Rect({
+    x: 0,
+    y: 0,
+    width: width,
+    height: 20,
+    fill: 'grey',
+});
+
+var timeLayer = new Konva.Layer();
+timeLayer.add(timeRect);
+stage.add(timeLayer);
+
+function changeTimer(clickStatus) {
+
+    var tmpTimeRect = new Konva.Rect({});
+    tmpTimeRect = timeLayer.find('Rect')[0];
+
+    timeLayer.find('Rect').destroy();
+    if (clickStatus === 'perfect') {
+        // if (tmpLayer.width <= stage.getWidth() - 50) {
+        //     tmpLayer.width += 50;
+        // } else {
+        //     tmpLayer.width = stage.getWidth();
+        // }
+        tmpTimeRect.width(tmpTimeRect.width() + 200);
+    }
+    else if (clickStatus === 'good') {
+        if (tmpTimeRect.width() - 150 < 0) {
+            tmpTimeRect.width(0);
+        }
+        else {
+            tmpTimeRect.width(tmpTimeRect.width() + 150);
+        }
+    }
+    else if (clickStatus === 'bad') {
+        if (tmpTimeRect.width() - 100 < 0) {
+            tmpTimeRect.width(0);
+        }
+        else {
+            tmpTimeRect.width(tmpTimeRect.width() + 100);
+        }
+    }
+    else if (clickStatus === 'miss') {
+        if (tmpTimeRect.width() - 100 < 0) {
+            tmpTimeRect.width(0);
+        }
+        else {
+            tmpTimeRect.width(tmpTimeRect.width() - 100);
+        }
+    }
+    timeLayer.clearBeforeDraw(true);
+    timeLayer.add(tmpTimeRect);
+    stage.add(timeLayer);
+}
+
+function pressMusic() {
+    var audio = document.getElementById("click");
+    audio.play();
 }
 
 function makePairBox() {
@@ -125,6 +164,7 @@ function makePairBox() {
     });
 
     movebox.on('mousedown', function () {
+        pressMusic();
         //console.log('click on movebox in ' + movebox.x() + ' ' + movebox.y());
         var dist = Math.floor(calcDist(movebox, unmovebox));
         if (dist <= 30) {
@@ -136,6 +176,7 @@ function makePairBox() {
                 scoreBoard.Miss = 0;
             }
             changeScoreBoard();
+            changeTimer('perfect');
             layer.remove(movebox, unmovebox);
         }
         else if (dist <= 40) {
@@ -147,6 +188,7 @@ function makePairBox() {
                 scoreBoard.Miss = 0;
             }
             changeScoreBoard();
+            changeTimer('good');
             layer.remove(movebox, unmovebox);
         }
         else if (dist <= 45) {
@@ -158,6 +200,7 @@ function makePairBox() {
                 scoreBoard.Miss = 0;
             }
             changeScoreBoard();
+            changeTimer('bad');
             layer.remove(movebox, unmovebox);
         }
         else {
@@ -168,6 +211,7 @@ function makePairBox() {
                 scoreBoard.Miss = 0;
             }
             changeScoreBoard();
+            changeTimer('miss');
             //console.log('Miss: ' + scoreBoard.Miss);
             layer.remove(movebox, unmovebox);
         }
@@ -187,53 +231,42 @@ function makePairBox() {
         onFinish: function () {
             scoreBoard.Miss++;
             changeScoreBoard();
+            changeTimer('miss');
             layer.remove(movebox, unmovebox);
         }
     });
     return layer;
 }
 
-var timeRect = new Konva.Rect({
-    x: 0,
-    y: 0,
-    width: stage.getWidth(),
-    height: 20,
-    fill: 'black',
-});
-
-function timer(clickStatus) {
-
-    if (clickStatus == 'Perfect') {
-        if (timeRect.width <= stage.getWidth() - 50) {
-            timeRect.width += 50;
-        } else {
-            timeRect.width = stage.getWidth();
-        }
-    }
-    else if (clickStatus == 'Good') {
-        if (timeRect.width <= stage.getWidth() - 30) {
-            timeRect.width += 30;
-        } else {
-            timeRect.width = stage.getWidth();
-        }
-    }
-    else if (clickStatus == 'Bad') {
-        if (timeRect.width <= stage.getWidth() - 10) {
-            timeRect.width += 10;
-        } else {
-            timeRect.width = stage.getWidth();
-        }
-    }
-}
 function play() {
-    // var boxNum = Math.floor(Math.random()*3) + 1;
-    // for (var i = 1; i <= boxNum; i++) {
-    //     console.log("box number = " + boxNum);
-    //     stage.add(makePairBox());
-    // }
     stage.add(makePairBox());
 }
 
-var t1 = window.setInterval(play, 2000);
+function addBg() {
+    var bgLayer = new Konva.Layer();
+    var imageObj = new Image();
+    imageObj.onload = function () {
+
+        var yoda = new Konva.Image({
+            x: 0,
+            y: 0,
+            image: imageObj,
+            width: width,
+            height: height
+        });
+        bgLayer.add(yoda);
+        stage.add(bgLayer);
+
+    };
+    imageObj.src = "../bg.gif";
+}
+
+addBg();
+var player = window.setInterval(play, 2000);
+setTimeout(player, 2000);
+var audio = document.getElementById("bgMusic");
+audio.volume = 0.5;
+audio.play();
+
 
 // ReactDOM.render(<App />, document.getElementById('root'));
